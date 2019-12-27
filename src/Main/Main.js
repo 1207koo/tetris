@@ -7,11 +7,6 @@ class Main extends Component {
   _isMounted = false;
   state={
     key:{
-      up: 38,
-      left: 37,
-      down: 40,
-      right: 39,
-      select: 32,
       moveright: 39,
       moveleft: 37,
       spinright: 38,
@@ -116,7 +111,7 @@ class Main extends Component {
       <div className="Main">
         TETRIS
         <br/>
-        <button onClick={()=>this.setState({view:'sprint'})}>SPRINT</button>
+        <button onClick={()=>this.setState({view:'freeplay'})}>FREEPLAY</button>
         <br/>
         <button onClick={()=>this.setState({view:'setting'})}>SETTING</button>
       </div>

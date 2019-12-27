@@ -107,11 +107,6 @@ class Setting extends Component {
     if(this.state.change===''){
       var keysetting=[];
       const keyname=[
-        'up',
-        'left',
-        'down',
-        'right',
-        'select',
         'moveright',
         'moveleft',
         'spinright',
@@ -120,7 +115,7 @@ class Setting extends Component {
         'harddrop',
         'hold',
       ];
-      for(let i=0;i<12;i++){
+      for(let i=0;i<7;i++){
         keysetting.push(
           <div className="keysetting" key={keyname[i]+'setting'}>
             {keyname[i]+': '+this.keytext(this.props.set[keyname[i]])+' '}

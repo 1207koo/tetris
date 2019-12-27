@@ -4,7 +4,8 @@ import './Tetris.css';
 class Tetris extends Component {
   _isMounted = false;
   timerId=null;
-  color=['#000000','#00FFFF','#0000FF','#FFAA00','#FFFF00','#00FF00','#9900FF','#FF0000'];
+  color=['#000000','#00FFFF','#0000FF','#FFAA00','#FFFF00','#00FF00','#9900FF','#FF0000',
+                   '#22A1A1','#2222A1','#A17722','#A1A122','#22A122','#6E22A1','#A12222',];
   dx=[
     [],
     [[1,2,3,4],[2,2,2,2],[0,1,2,3],[2,2,2,2]],
@@ -337,6 +338,24 @@ class Tetris extends Component {
       }
     }
     if(this.state.now!==0){
+      let gy=this.state.y;
+      for(;;gy--){
+        let able=true;
+        for(let i=0;i<4;i++){
+          const rx=this.state.x+this.dx[this.state.now][this.state.d][i];
+          const ry=gy+this.dy[this.state.now][this.state.d][i];
+          if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
+        }
+        if(!able){
+          gy++;
+          break;
+        }
+      }
+      for(let i=0;i<4;i++){
+        const rx=this.state.x+this.dx[this.state.now][this.state.d][i];
+        const ry=gy+this.dy[this.state.now][this.state.d][i];
+        if(rx>=0&&ry>=0&&rx<10&&ry<30)tabledata[rx][ry]=this.state.now+7;
+      }
       for(let i=0;i<4;i++){
         const rx=this.state.x+this.dx[this.state.now][this.state.d][i];
         const ry=this.state.y+this.dy[this.state.now][this.state.d][i];
