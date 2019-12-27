@@ -79,9 +79,11 @@ class Tetris extends Component {
     drop: 60,
     stop: 60,
     now: 0,
+    hold: 0,
     x: 2,
     y: 18,
     d: 0,
+    holded: false,
   }
   componentDidMount(){
     this._isMounted=true;
@@ -170,6 +172,28 @@ class Tetris extends Component {
     this.popblock();
     this.setState({y:18,stop:60,drop:60});
   }
+  hold(){
+    if(this.state.hold===0){
+      let newnow=this.state.block[0];
+      let newblock=this.state.block;
+      for(let i=0;i<14;i++)newblock[i]=newblock[i+1];
+      if(newblock[7]===0){
+        let i=0;
+        for(;newblock[i]!==0;i++){}
+        let newb=[1,2,3,4,5,6,7];
+        for(let j=7;j>0;j--){
+          let k=Math.floor(Math.random()*j);
+          let tmp=newb[k];
+          newb[k]=newb[j-1];
+          newb[j-1]=tmp;
+          newblock[i]=newb[j-1];
+          i++;
+        }
+      }
+      this.setState({now:newnow,block:newblock,x:2,d:0,hold:this.state.now,holded:true});
+    }
+    else this.setState({x:2,y:18,d:0,now:this.state.hold,hold:this.state.now,holded:true});
+  }
   keyhandler(press){
     if(!this._isMounted)return;
     if(press===27)this.props.onClose();
@@ -180,6 +204,7 @@ class Tetris extends Component {
     else if(press===this.props.set.spinleft)this.spinleft();
     else if(press===this.props.set.softdrop)this.softdrop();
     else if(press===this.props.set.harddrop)this.harddrop();
+    else if(press===this.props.set.hold&&!this.state.holded)this.hold();
   }
   fill(){
     let newblock=this.state.block;
@@ -264,7 +289,7 @@ class Tetris extends Component {
         i++;
       }
     }
-    this.setState({now:newnow,block:newblock,x:2});
+    this.setState({now:newnow,block:newblock,x:2,d:0,holded:false});
   }
   eachframe(){
     if(!this._isMounted)return;
@@ -302,8 +327,8 @@ class Tetris extends Component {
   }
   render() {
     //IJLOSTZ
-    var ttable=[];
-    var ithelement=[];
+    let ttable=[];
+    let ithelement=[];
     const tabledata=[];
     for(let i=0;i<this.state.map.length;i++){
       tabledata.push([]);
@@ -326,8 +351,29 @@ class Tetris extends Component {
       ttable.push(<tr key={i+'row'}>{ithelement}</tr>);
     }
     const tmap=(<table><tbody>{ttable}</tbody></table>);
+    let htable=[];
+    const holddata=[];
+    for(let i=0;i<5;i++){
+      holddata.push([0,0,0,0,0]);
+    }
+    if(this.state.hold!==0){
+      for(let i=0;i<4;i++){
+        const rx=this.dx[this.state.hold][0][i];
+        const ry=this.dy[this.state.hold][0][i];
+        holddata[rx][ry]=this.state.hold;
+      }
+    }
+    for(let i=0;i<5;i++){
+      ithelement=[];
+      for(let j=0;j<5;j++){
+        ithelement.push(<td key={i+'row-'+j+'col-hold'} style={{backgroundColor:this.color[holddata[j][4-i]]}}></td>);
+      }
+      htable.push(<tr key={i+'row-hold'}>{ithelement}</tr>);
+    }
+    const hmap=(<table><tbody>{htable}</tbody></table>);
     return (
       <div className="Tetris">
+        {hmap}
         {tmap}
         {(this.state.time/60.0).toFixed(3)}
         <br/>
