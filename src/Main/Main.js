@@ -24,13 +24,9 @@ class Main extends Component {
   }
   componentDidMount(){
     this._isMounted=true;
-    document.addEventListener("keydown", (event)=>{this.keyhandler(event.keyCode)});
   }
   componentWillUnmount(){
     this._isMounted=false;
-  }
-  keyhandler(press){
-    console.log(press+' '+this.keytext(press));
   }
   keytext(key){
     if(key===38){
