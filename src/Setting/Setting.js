@@ -118,9 +118,8 @@ class Setting extends Component {
       for(let i=0;i<7;i++){
         keysetting.push(
           <div className="keysetting" key={keyname[i]+'setting'}>
-            {keyname[i]+': '+this.keytext(this.props.set[keyname[i]])+' '}
+            <div className="key-text">{keyname[i]+': '+this.keytext(this.props.set[keyname[i]])+' '}</div>
             <button onClick={()=>{this.setState({change:keyname[i], changedkey:this.props.set[keyname[i]]})}}>change</button>
-            <br/>
           </div>
         )
       }

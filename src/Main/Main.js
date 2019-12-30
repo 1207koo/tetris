@@ -118,7 +118,7 @@ class Main extends Component {
     }
     return (
       <div className="Main">
-        TETRIS
+        <div className="Main-title">TETRIS</div>
         <br/>
         <button onClick={()=>this.setState({view:'freeplay',line:0,clear:false,time:0.0, lastplay: 'freeplay'})}>FREEPLAY</button>
         <br/>
