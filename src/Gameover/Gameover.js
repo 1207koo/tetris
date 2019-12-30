@@ -21,7 +21,7 @@ class Gameover extends Component {
   render() {
     return(
       <div className="Gameover">
-        {'Game '+this.props.clear?'clear!':'over'}
+        {'Game '+(this.props.clear?'clear!':'over')}
         <br/><br/><br/>
         {'score: '+this.props.score}
         <br/>
