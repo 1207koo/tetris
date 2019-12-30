@@ -144,8 +144,8 @@ class Tetris extends Component {
     }
   }
   spinleft(){
-    let ox=this.state.now===1?this.spinIx:(this.state.now===4?this.spinOx:this.spinEx);
-    let oy=this.state.now===1?this.spinIy:(this.state.now===4?this.spinOy:this.spinEy);
+    const ox=this.state.now===1?this.spinIx:(this.state.now===4?this.spinOx:this.spinEx);
+    const oy=this.state.now===1?this.spinIy:(this.state.now===4?this.spinOy:this.spinEy);
     let tx=[];
     let ty=[];
     for(let i=0;i<ox[0].length;i++){
@@ -419,6 +419,7 @@ class Tetris extends Component {
         if(newdrop===0){
           newdrop=60;
           newy--;
+          this.setState({lastmove:'autodrop'});
         }
       }
     }
