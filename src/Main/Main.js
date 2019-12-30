@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './Main.css';
 import Tetris from '../Tetris/Tetris';
 import Setting from '../Setting/Setting';
+import Gameover from '../Gameover/Gameover';
 
 class Main extends Component {
   _isMounted = false;
@@ -16,6 +17,11 @@ class Main extends Component {
       hold: 67,
     },
     view: 'main',
+    line:0,
+    clear: false,
+    time:0.0,
+    score: 0,
+    lastplay: 'sprint',
   }
   componentDidMount(){
     this._isMounted=true;
@@ -102,16 +108,21 @@ class Main extends Component {
   }
   render() {
     if(this.state.view==='sprint'||this.state.view==='freeplay'){
-      return (<Tetris type={this.state.view} set={this.state.key} onClose={()=>this.setState({view:'main'})}/>);
+      return (<Tetris type={this.state.view} set={this.state.key} onClose={()=>this.setState({view:'main'})} onOver={()=>this.setState({view:'gameover'})} setLine={(line)=>this.setState({line:line})} onClear={()=>this.setState({clear:true})} setTime={(time)=>this.setState({time:time})} setScore={(score)=>this.setState({score:score})}/>);
     }
     if(this.state.view==='setting'){
       return (<Setting set={this.state.key} onClose={()=>{this.setState({view:'main'});}} onChange={(keyType,newKey)=>{const keyset=this.state.key;keyset[keyType]=newKey;this.setState({key:keyset})}}/>);
+    }
+    if(this.state.view==='gameover'){
+      return (<Gameover onClose={()=>{this.setState({view:'main'});}} onReplay={(type)=>this.setState({view:type,line:0,clear:false,time:0.0})} line={this.state.line} clear={this.state.clear} time={this.state.time} type={this.state.lastplay} score={this.state.score}/>);
     }
     return (
       <div className="Main">
         TETRIS
         <br/>
-        <button onClick={()=>this.setState({view:'freeplay'})}>FREEPLAY</button>
+        <button onClick={()=>this.setState({view:'freeplay',line:0,clear:false,time:0.0, lastplay: 'freeplay'})}>FREEPLAY</button>
+        <br/>
+        <button onClick={()=>this.setState({view:'sprint',line:0,clear:false,time:0.0, lastplay: 'sprint'})}>SPRINT</button>
         <br/>
         <button onClick={()=>this.setState({view:'setting'})}>SETTING</button>
       </div>

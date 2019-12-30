@@ -85,6 +85,12 @@ class Tetris extends Component {
     y: 18,
     d: 0,
     holded: false,
+    lastmove: 'started',
+    backtoback: false,
+    combo: 0,
+    erasedline: 0,
+    lineclearmessage: '',
+    score: 0,
   }
   componentDidMount(){
     this._isMounted=true;
@@ -103,7 +109,7 @@ class Tetris extends Component {
       const ry=this.state.y+this.dy[this.state.now][this.state.d][i];
       if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
     }
-    if(able)this.setState({x:this.state.x+1,stop:60});
+    if(able)this.setState({x:this.state.x+1,stop:60,lastmove:'moveright'});
   }
   moveleft(){
     let able=true;
@@ -112,7 +118,7 @@ class Tetris extends Component {
       const ry=this.state.y+this.dy[this.state.now][this.state.d][i];
       if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
     }
-    if(able)this.setState({x:this.state.x-1,stop:60});
+    if(able)this.setState({x:this.state.x-1,stop:60,lastmove:'moveleft'});
   }
   spinright(){
     const ox=this.state.now===1?this.spinIx:(this.state.now===4?this.spinOx:this.spinEx);
@@ -132,7 +138,7 @@ class Tetris extends Component {
         if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
       }
       if(able){
-        this.setState({stop:60,d:(this.state.d+1)%4,x:this.state.x+tx[j],y:this.state.y+ty[j]});
+        this.setState({stop:60,d:(this.state.d+1)%4,x:this.state.x+tx[j],y:this.state.y+ty[j],lastmove:'spinright'});
         return;
       }
     }
@@ -155,7 +161,7 @@ class Tetris extends Component {
         if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
       }
       if(able){
-        this.setState({stop:60,d:(this.state.d+3)%4,x:this.state.x+tx[j],y:this.state.y+ty[j]});
+        this.setState({stop:60,d:(this.state.d+3)%4,x:this.state.x+tx[j],y:this.state.y+ty[j],lastmove:'spinleft'});
         return;
       }
     }
@@ -167,9 +173,16 @@ class Tetris extends Component {
       const ry=this.state.y+this.dy[this.state.now][this.state.d][i]-1;
       if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
     }
-    if(able)this.setState({y:this.state.y-1,stop:60,drop:60});
+    if(able)this.setState({y:this.state.y-1,stop:60,drop:60,lastmove:'softdrop'});
   }
   harddrop(){
+    let able=true;
+    for(let i=0;i<4;i++){
+      const rx=this.state.x+this.dx[this.state.now][this.state.d][i];
+      const ry=this.state.y+this.dy[this.state.now][this.state.d][i]-1;
+      if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
+    }
+    if(able)this.setState({lastmove:'harddrop'});
     this.popblock();
     this.setState({y:18,stop:60,drop:60});
   }
@@ -191,14 +204,14 @@ class Tetris extends Component {
           i++;
         }
       }
-      this.setState({now:newnow,block:newblock,x:2,d:0,hold:this.state.now,holded:true});
+      this.setState({now:newnow,block:newblock,x:2,d:0,hold:this.state.now,holded:true,lastmove:'hold'});
     }
-    else this.setState({x:2,y:18,d:0,now:this.state.hold,hold:this.state.now,holded:true});
+    else this.setState({x:2,y:18,d:0,now:this.state.hold,hold:this.state.now,holded:true,lastmove:'hold'});
   }
   keyhandler(press){
     if(!this._isMounted)return;
     if(press===27)this.props.onClose();
-    else if(this.state.time<0)return;
+    else if(this.state.time<0||this.state.now===0)return;
     else if(press===this.props.set.moveright)this.moveright();
     else if(press===this.props.set.moveleft)this.moveleft();
     else if(press===this.props.set.spinright)this.spinright();
@@ -238,7 +251,37 @@ class Tetris extends Component {
     }
     this.setState({block:newblock});
   }
+  isTspin(){
+    if(this.state.now!==6)return 0;
+    if(this.state.lastmove!=='spinright'&&this.state.lastmove!=='spinleft')return 0;
+    let corner=0;
+    if(this.state.x-1<0||this.state.x-1>=0||this.state.y-1<0||this.state.y-1>=30||this.state.map[this.state.x-1][this.state.y-1]!==0)corner++;
+    if(this.state.x-1<0||this.state.x-1>=0||this.state.y+1<0||this.state.y+1>=30||this.state.map[this.state.x-1][this.state.y+1]!==0)corner++;
+    if(this.state.x+1<0||this.state.x+1>=0||this.state.y-1<0||this.state.y-1>=30||this.state.map[this.state.x+1][this.state.y-1]!==0)corner++;
+    if(this.state.x+1<0||this.state.x+1>=0||this.state.y+1<0||this.state.y+1>=30||this.state.map[this.state.x+1][this.state.y+1]!==0)corner++;
+    if(corner<3)return 0;
+    let able=true;
+    for(let i=0;i<4;i++){
+      const rx=this.state.x+this.dx[this.state.now][this.state.d][i];
+      const ry=this.state.y+this.dy[this.state.now][this.state.d][i]+1;
+      let pass=false;
+      for(let j=0;j<4;j++){
+        const tx=this.state.x+this.dx[this.state.now][this.state.d][j];
+        const ty=this.state.y+this.dy[this.state.now][this.state.d][j];
+        if(rx===tx&&ry===ty){
+          pass=true;
+          continue;
+        }
+      }
+      if(pass)continue;
+      if(rx<0||rx>=10||ry<0||ry>=30||this.state.map[rx][ry]!==0)able=false;
+    }
+    if(able)return 1;//mini
+    else return 2;//tspin
+  }
   popblock(){
+    let newline=0;
+    let newscore=0;
     if(this.state.now!==0){
       for(let newy=this.state.y;;newy--){
         let able=true;
@@ -261,6 +304,51 @@ class Tetris extends Component {
               if(newmap[i][j]!==0)bcount[j]++;
             }
           }
+          let clearedline=0;
+          for(let i=0;i<30;i++){
+            if(bcount[i]===10)clearedline++;
+          }
+          let message='';
+          let newcombo=(clearedline===0)?0:(this.state.combo+1);
+          let newbacktoback=(clearedline===4||this.isTspin()>0)?true:(clearedline>0?false:this.state.backtoback);
+          let addscore=0;
+          if(newbacktoback&&this.state.backtoback&&clearedline>0){
+            message=message+'BackToBack ';
+            addscore++;
+          }
+          if(this.isTspin()===1)message=message+'Tspin-mini ';
+          else if(this.isTspin()===2){
+            message=message+'Tspin ';
+            addscore+=1+clearedline;
+          }
+          if(clearedline===1)message=message+'Single ';
+          if(clearedline===2){
+            message=message+'Double ';
+            addscore++;
+          }
+          if(clearedline===3){
+            message=message+'Triple ';
+            addscore+=2;
+          }
+          if(clearedline===4){
+            message=message+'Tetris ';
+            addscore+=4;
+          }
+          if(newcombo>1){
+            message=message+(newcombo-1)+'combo ';
+            const damage=[0,0,0,1,1,2,2,3,3,4,4,4,5,5];
+            if(newcombo>13)addscore+=5;
+            else addscore+=damage[newcombo];
+          }
+          newscore=this.state.score+addscore;
+          newline=this.state.erasedline+clearedline;
+          if(newline>=40&&this.props.type==='sprint'){
+            this.props.setTime((this.state.time/60.0).toFixed(3));
+            this.props.setScore(newscore);
+            this.props.onClear();
+            this.props.onOver();
+          }
+          this.setState({erasedline:newline,backtoback:newbacktoback,combo:newcombo,lineclearmessage:message,score:newscore});
           let p=0;
           for(let i=0;i<30;i++){
             while(p<30&&bcount[p]===10)p++;
@@ -275,6 +363,16 @@ class Tetris extends Component {
       }
     }
     let newnow=this.state.block[0];
+    for(let i=0;i<4;i++){
+      const rx=2+this.dx[newnow][0][i];
+      const ry=18+this.dy[newnow][0][i];
+      if(this.state.map[rx][ry]!==0){
+        this.props.setTime((this.state.time/60.0).toFixed(3));
+        this.props.setScore(newscore);
+        this.props.setLine(newline);
+        this.props.onOver();
+      }
+    }
     let newblock=this.state.block;
     for(let i=0;i<14;i++)newblock[i]=newblock[i+1];
     if(newblock[7]===0){
@@ -290,7 +388,7 @@ class Tetris extends Component {
         i++;
       }
     }
-    this.setState({now:newnow,block:newblock,x:2,d:0,holded:false});
+    this.setState({now:newnow,block:newblock,x:2,d:0,holded:false,lastmove:'blockfall'});
   }
   eachframe(){
     if(!this._isMounted)return;
@@ -390,11 +488,49 @@ class Tetris extends Component {
       htable.push(<tr key={i+'row-hold'}>{ithelement}</tr>);
     }
     const hmap=(<table><tbody>{htable}</tbody></table>);
+    let ntable=[];
+    const nextdata=[];
+    for(let i=0;i<5;i++){
+      nextdata.push([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+    }
+    for(let j=0;j<5;j++){
+      if(this.state.block[j]!==0){
+        for(let i=0;i<4;i++){
+          const rx=this.dx[this.state.block[j]][0][i];
+          const ry=this.dy[this.state.block[j]][0][i];
+          nextdata[rx][ry+20-5*j]=this.state.block[j];
+        }
+      }
+    }
+    for(let i=0;i<25;i++){
+      ithelement=[];
+      for(let j=0;j<5;j++){
+        ithelement.push(<td key={i+'row-'+j+'col-next'} style={{backgroundColor:this.color[nextdata[j][24-i]]}}></td>);
+      }
+      ntable.push(<tr key={i+'row-next'}>{ithelement}</tr>);
+    }
+    const nmap=(<table><tbody>{ntable}</tbody></table>);
     return (
       <div className="Tetris">
-        {hmap}
-        {tmap}
-        {(this.state.time/60.0).toFixed(3)}
+        <div className="Tetris-inner" style={{height:'480px',width:'100%',display: 'flex',flexDirection:'row'}}>
+          <div className="Tetris-hold" style={{height:'480px',width:'120px'}}>
+            {hmap}
+            <br/>
+            {'TIME: '+(this.state.time/60.0).toFixed(3)}
+            <br/>
+            {(this.props.type==='sprint'?('LINE LEFT: '+(40-this.state.erasedline)):('LINE: '+this.state.erasedline))}
+            <br/>
+            {'SCORE: '+this.state.score}
+            <br/>
+            {this.state.lineclearmessage}
+          </div>
+          <div className="Tetris-tetris" style={{height:'480px',width:'240px',justifyContent:'center',flexDirection:'row'}}>
+            {tmap}
+          </div>
+          <div className="Tetris-next" style={{height:'480px',width:'240px',justifyContent:'flex-start',flexDirection:'row'}}>
+            {nmap}
+          </div>
+        </div>
         <br/>
         <button onClick={this.props.onClose}>BACK</button>
       </div>

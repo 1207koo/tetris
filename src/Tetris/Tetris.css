@@ -7,3 +7,11 @@ td{
   width: 15px;
   border: 1px solid #444444;
 }
+.Tetris-hold{
+  height: 100%;
+  width: 50%-80px;
+}
+.Tetris-next{
+  height: 100%;
+  width: 50%-80px;
+}
